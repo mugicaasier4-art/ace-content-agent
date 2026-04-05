@@ -1,0 +1,15 @@
+{
+  "_comment": "Schema de pending.json — el agente escribe este archivo y lo pushea para activar el GitHub Action",
+  "date": "YYYY-MM-DD",
+  "topic": "descripción corta del tema en 1 línea",
+  "pillar": "educacion|caso|build|pov|personal",
+  "publish_at": "2026-04-05T12:00:00Z",
+  "linkedin": "texto completo del post de LinkedIn con \\n para saltos de línea",
+  "x_thread": [
+    "tweet 1 texto (<280 chars)",
+    "tweet 2 texto (<280 chars)",
+    "tweet 3 texto (<280 chars)",
+    "tweet 4 texto opcional (<280 chars)"
+  ],
+  "notification_email": "asiermugica.ia@gmail.com"
+}
