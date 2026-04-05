@@ -1,0 +1,39 @@
+name: Publish to Typefully
+
+on:
+  push:
+    paths:
+      - 'drafts/pending.json'
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Publish to Typefully
+        env:
+          TYPEFULLY_API_KEY: ${{ secrets.TYPEFULLY_API_KEY }}
+          TYPEFULLY_SOCIAL_SET_ID: ${{ secrets.TYPEFULLY_SOCIAL_SET_ID }}
+        run: python .github/scripts/typefully_publish.py
+
+      - name: Archive draft
+        run: |
+          DATE=$(python3 -c "import json; d=json.load(open('drafts/pending.json')); print(d['date'])")
+          mkdir -p drafts/published
+          cp drafts/pending.json drafts/published/${DATE}.json
+          git config user.email "agent@acedigital.ia"
+          git config user.name "AI Content Agent"
+          git add drafts/published/${DATE}.json
+          git commit -m "chore: archive draft ${DATE}" || echo "Nothing to archive"
+          git push
