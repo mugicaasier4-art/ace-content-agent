@@ -19,40 +19,57 @@ Reglas absolutas:
 
 ### 1A. Tendencias actuales de AI/automation
 
-Usa WebSearch con estas queries (ejecutar las 3):
-- `"AI automation" OR "agentes IA" OR "n8n" tendencias -is:ad`
-- `"AI agents" site:x.com últimas 24h`
-- `"automatización IA" ROI negocio servicio`
+Usa WebSearch con estas queries (ejecutar las 3 en paralelo):
+- `"AI automation" OR "agentes IA" tendencias site:x.com`
+- `"AI agents" ROI negocio servicio 2026`
+- `"automatización IA" OR "Make" OR "agentes IA" casos reales`
 
 Para cada resultado relevante, anota: título/tema, engagement visible si lo hay, ángulo principal.
 
-### 1B. Últimos posts de los 3 creadores de referencia
+### 1B. GitHub Trending — repos de AI/automation
 
-Usa Firecrawl o WebSearch para obtener el post más reciente de cada uno:
+Usa WebFetch para obtener los repos en tendencia:
+- URL: `https://github.com/trending/python?since=weekly&spoken_language_code=`
+- URL: `https://github.com/trending?since=daily`
+
+Para cada repo relevante de AI, agents o automation, extrae:
+- Nombre y descripción
+- Número de stars y stars ganadas esta semana
+- Qué problema resuelve
+
+Filtra solo los que sean aplicables a negocios de servicio (automatización, agentes, workflows, voz IA, CRM, leads). Descarta modelos de ML puros, librerías de data science, etc.
+
+Un repo con 500+ stars nuevas esta semana = tema con tracción real = ángulo potente para el post.
+
+### 1C. Últimos posts de los 3 creadores de referencia
+
+Usa WebSearch para obtener el post más reciente de cada uno:
 - Nick Saraev: `https://x.com/nicksaraev`
 - Liam Ottley: `https://x.com/LiamOttley`
 - Nate Herk: `https://x.com/NateHerk`
 
 Extrae: tema del post, ángulo, cualquier métrica o número mencionado.
 
-### 1C. Knowledge base Nick Saraev
-
-Lee los archivos en `makerschool/knowledge/` y sintetiza en 3-5 bullets los insights más accionables y recientes que aún no hayas cubierto (compara con published-topics-log.json).
-
 ### 1D. Contexto propio
 
 Lee estos archivos:
-- `social-media/ai-content-agent/real-results.md` — qué ejemplos reales tienes disponibles
-- `social-media/ai-content-agent/published-topics-log.json` — qué temas ya cubriste
-- `docs/superpowers/specs/2026-04-02-linkedin-strategy.md` — los 15 templates y 5 pilares de contenido
+- `real-results.md` — qué ejemplos reales tienes disponibles
+- `published-topics-log.json` — qué temas ya cubriste
 
 ## FASE 2 — SELECCIÓN DE TEMA
 
 Crea una tabla de puntuación con todos los temas encontrados en FASE 1:
 
-| Tema | ROI concreto (+3) | Ejemplo real (+3) | No publicado (+2) | Engagement visible (+2) | Total |
-|------|-------------------|-------------------|-------------------|------------------------|-------|
-| ...  | ...               | ...               | ...               | ...                    | ...   |
+| Tema | ROI concreto (+3) | Ejemplo real (+3) | No publicado (+2) | Trending GitHub (+2) | Engagement X/web (+2) | Total |
+|------|-------------------|-------------------|-------------------|---------------------|-----------------------|-------|
+| ...  | ...               | ...               | ...               | ...                 | ...                   | ...   |
+
+Criterios:
+- **ROI concreto**: ¿el tema permite hablar de ahorro de tiempo, conversión o dinero?
+- **Ejemplo real**: ¿hay un dato en `real-results.md` que apoye el tema?
+- **No publicado**: ¿no aparece en `published-topics-log.json`?
+- **Trending GitHub**: ¿hay un repo con 200+ stars esta semana relacionado con el tema?
+- **Engagement X/web**: ¿el post o artículo encontrado tiene likes/RTs/comentarios visibles?
 
 Elige el tema con el score más alto. En caso de empate, prefiere el que tenga ejemplo real disponible.
 
