@@ -81,24 +81,39 @@ Documenta:
 
 ## FASE 3 — GENERACIÓN
 
+### Antes de escribir: ángulo de tendencia
+
+Conecta el tema elegido con la tendencia actual que encontraste en FASE 1. El post debe sentirse de hoy, no genérico. Ejemplos de conexión:
+- "Este repo con 800 stars esta semana hace exactamente lo que explico"
+- "Liam Ottley habló de esto ayer — aquí el ángulo para negocios locales"
+- Noticia o caso reciente de la búsqueda → úsalo como contexto en el cuerpo
+
 ### Post LinkedIn (español, 800-1300 caracteres)
+
+**Criterios de calidad del hook** (es lo más importante — decide el alcance):
+- Empieza con un número o dato concreto, nunca con "Yo" o "Hoy"
+- Crea una promesa implícita: el lector debe querer saber el "cómo" o el "por qué"
+- NO preguntas retóricas, NO "¿sabías que...?", NO frases motivacionales
+- Ejemplos de hooks buenos: "Un gym cerró el 40% más de leads sin contratar a nadie." / "3 automatizaciones. 12h de trabajo manual eliminadas. Un cliente."
+- Escribe 3 versiones del hook y elige la más directa y específica
 
 Estructura obligatoria:
 
 ```
-[HOOK — 1-2 líneas. Número + resultado concreto. NO pregunta. NO "¿sabías que...?"]
+[HOOK — 1-2 líneas. Número + resultado concreto]
 
 [línea en blanco]
 
-[Cuerpo — desarrolla el tema]
+[Desarrollo — conecta el tema con la tendencia actual de FASE 1]
 [Una idea por línea]
 [Máximo 8-10 palabras por línea]
 [Espacio en blanco entre cada bloque de 2-3 ideas]
-[Incluye el ejemplo real de real-results.md como evidencia]
+[Ejemplo real de real-results.md como evidencia concreta]
+[Explica el mecanismo, no solo el resultado — el lector debe aprender algo accionable]
 
 [línea en blanco]
 
-[CTA — 1 línea directa. Puede ser: acción específica, pregunta de decisión, o promesa de valor]
+[CTA — 1 línea. Acción específica, pregunta de decisión, o promesa de valor tangible]
 
 [línea en blanco]
 
@@ -112,76 +127,155 @@ Reglas de formato:
 - Números concretos > afirmaciones vagas
 - Emojis: máximo 2-3, solo si aportan claridad, nunca decorativos
 
+**Autocrítica antes de finalizar el post:** Responde estas 3 preguntas:
+1. ¿El hook hace que alguien que scrollea quiera leer la segunda línea? (si no, reescríbelo)
+2. ¿El cuerpo explica el mecanismo o solo da resultados vacíos? (si solo da resultados, añade el "cómo")
+3. ¿Hay al menos un número o dato concreto en el cuerpo? (si no, añádelo o usa el ejemplo de real-results.md)
+
+Si alguna respuesta es "no", corrige antes de continuar.
+
 ### Hilo X (español, 3-4 tweets)
 
-Tweet 1 (hook): versión condensada del hook de LinkedIn (<280 chars). Debe funcionar standalone.
-Tweet 2: el punto más importante del cuerpo, con el dato o métrica más potente (<280 chars).
+Tweet 1 (hook): versión condensada del hook de LinkedIn (<280 chars). Standalone, con número.
+Tweet 2: el mecanismo o aprendizaje más accionable del cuerpo, con dato concreto (<280 chars).
 Tweet 3: el ejemplo real de real-results.md en forma directa (<280 chars).
-Tweet 4 (opcional): CTA adaptado a X (<280 chars). Más conversacional que LinkedIn.
+Tweet 4 (opcional): CTA adaptado a X, más conversacional que LinkedIn (<280 chars).
 
-Separa los tweets con `|||` para el script de publicación.
+Cada tweet debe poder leerse de forma independiente. No uses "hilo:" ni "1/" — empieza directo.
 
 ## FASE 4 — PUBLICACIÓN
 
-Ejecuta el script de publicación:
+El proxy del entorno bloquea `api.typefully.com`. La publicación se hace via GitHub Actions:
+1. Escribe `drafts/pending.json`
+2. Pushea via GitHub REST API con PAT
+3. El Action se activa automáticamente y publica en Typefully
+
+### Paso 1: Calcular publish_at (+4h desde ahora en UTC)
 
 ```bash
-python social-media/ai-content-agent/publish.py \
-  --linkedin-post "[AQUÍ EL POST COMPLETO]" \
-  --x-thread "[tweet1]|||[tweet2]|||[tweet3]|||[tweet4]" \
-  --delay-hours 4
+PUBLISH_AT=$(python3 -c "from datetime import datetime, timedelta, timezone; print((datetime.now(timezone.utc)+timedelta(hours=4)).strftime('%Y-%m-%dT%H:%M:%SZ'))")
+echo $PUBLISH_AT
 ```
 
-Verifica el output:
-- Debe mostrar `[LinkedIn] Draft ID: ...` y `[X] Draft ID: ...`
-- Si hay error, diagnostica y reintenta (puede ser problema de env vars o API)
-- Anota los draft_ids en el log
+### Paso 2: Escribir drafts/pending.json
 
-## FASE 5 — LOG Y NOTIFICACIÓN
-
-### Actualizar historial de temas
-
-Lee `social-media/ai-content-agent/published-topics-log.json`, añade la nueva entrada al array `topics`, y escribe el archivo actualizado:
+Escribe el archivo con este formato exacto:
 
 ```json
 {
   "date": "YYYY-MM-DD",
-  "topic": "[tema en 1 línea descriptiva]",
-  "pillar": "[educacion|caso|build|pov|personal]"
+  "topic": "[tema en 1 línea]",
+  "pillar": "[educacion|caso|build|pov|personal]",
+  "publish_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "linkedin": "[post LinkedIn completo, con saltos de línea reales]",
+  "x_thread": [
+    "[tweet 1 <280 chars]",
+    "[tweet 2 <280 chars]",
+    "[tweet 3 <280 chars]"
+  ]
 }
 ```
 
-Actualiza también `last_updated` a la fecha de hoy.
+### Paso 3: Pushear via GitHub API
+
+Obtén el SHA actual del archivo (necesario para actualizar un archivo existente):
+
+```bash
+SHA=$(curl -sf -H "Authorization: Bearer $GITHUB_PAT" \
+  "https://api.github.com/repos/mugicaasier4-art/ace-content-agent/contents/drafts/pending.json" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
+```
+
+Push del archivo (si SHA está vacío, el campo se omite automáticamente):
+
+```bash
+CONTENT=$(base64 -w0 drafts/pending.json)
+SHA_FIELD=$([ -n "$SHA" ] && echo ",\"sha\":\"$SHA\"" || echo "")
+curl -s -X PUT \
+  -H "Authorization: Bearer $GITHUB_PAT" \
+  -H "Content-Type: application/json" \
+  "https://api.github.com/repos/mugicaasier4-art/ace-content-agent/contents/drafts/pending.json" \
+  -d "{\"message\":\"content: draft $(date +%F)\",\"content\":\"$CONTENT\"$SHA_FIELD}"
+```
+
+Verifica que la respuesta sea HTTP 200 o 201. El GitHub Action se activará automáticamente en los próximos segundos.
+
+Si el push falla, diagnostica: SHA incorrecto, PAT sin permisos de `contents:write`, o JSON malformado en pending.json.
+
+## FASE 5 — LOG
+
+### Actualizar historial de temas
+
+El git push normal está bloqueado. Usa GitHub API:
+
+```bash
+# 1. Descarga el JSON actual
+curl -s -H "Authorization: Bearer $GITHUB_PAT" \
+  "https://api.github.com/repos/mugicaasier4-art/ace-content-agent/contents/published-topics-log.json" \
+  | python3 -c "
+import sys, json, base64
+d = json.load(sys.stdin)
+content = json.loads(base64.b64decode(d['content']).decode())
+content['last_updated'] = 'YYYY-MM-DD'
+content['topics'].append({'date': 'YYYY-MM-DD', 'topic': 'TEMA', 'pillar': 'PILAR'})
+print(json.dumps({'sha': d['sha'], 'new_content': json.dumps(content, indent=2, ensure_ascii=False)}, ensure_ascii=False))
+" > /tmp/log_update.json
+
+# 2. Push del JSON actualizado
+SHA=$(python3 -c "import json; print(json.load(open('/tmp/log_update.json'))['sha'])")
+NEW_CONTENT=$(python3 -c "import json,base64; d=json.load(open('/tmp/log_update.json')); print(base64.b64encode(d['new_content'].encode()).decode())")
+curl -s -X PUT \
+  -H "Authorization: Bearer $GITHUB_PAT" \
+  -H "Content-Type: application/json" \
+  "https://api.github.com/repos/mugicaasier4-art/ace-content-agent/contents/published-topics-log.json" \
+  -d "{\"message\":\"chore: log topic $(date +%F)\",\"content\":\"$NEW_CONTENT\",\"sha\":\"$SHA\"}"
+```
+
+Adapta los valores `YYYY-MM-DD`, `TEMA` y `PILAR` con los datos reales de esta ejecución.
 
 ### Guardar log de sesión
 
-Crea `active/content-agent-log-YYYY-MM-DD.md` con:
-- Fecha y hora de ejecución
-- Resumen del research (top 5 temas encontrados con scores)
-- Tema elegido y justificación
-- El post LinkedIn generado completo
-- El hilo X completo
-- Draft IDs de Typefully
-- Cualquier issue o advertencia encontrada
-
-### Notificación Telegram
-
-Envía por Telegram (reply tool) al chat configurado:
+Crea el contenido del log con este formato:
 
 ```
-[AI Content Agent] Post generado
+# Content Agent Log — YYYY-MM-DD HH:MM UTC
 
-LINKEDIN:
-[pegar el post completo]
+## Research — Top temas (con scores)
+[tabla de puntuación de FASE 2]
 
-HILO X:
+## Tema elegido
+[tema, pilar, justificación]
+
+## Post LinkedIn
+[post completo]
+
+## Hilo X
 Tweet 1: [texto]
 Tweet 2: [texto]
 Tweet 3: [texto]
 
-Draft en Typefully en 4h. Si no cancelas, se publica.
-LinkedIn Draft ID: [id]
-X Draft ID: [id]
+## Publicación
+- publish_at: [datetime UTC]
+- Push a GitHub: [OK / ERROR]
+- GitHub Action: activado
+
+## Issues
+[cualquier error o advertencia encontrada, o "ninguno"]
+```
+
+Pushea el log al repo via GitHub API (archivo nuevo — sin SHA):
+
+```bash
+LOG_CONTENT=$(cat <<'LOGEOF'
+[contenido del log]
+LOGEOF
+)
+LOG_B64=$(echo "$LOG_CONTENT" | base64 -w0)
+curl -s -X PUT \
+  -H "Authorization: Bearer $GITHUB_PAT" \
+  -H "Content-Type: application/json" \
+  "https://api.github.com/repos/mugicaasier4-art/ace-content-agent/contents/active/content-agent-log-$(date +%F).md" \
+  -d "{\"message\":\"chore: session log $(date +%F)\",\"content\":\"$LOG_B64\"}"
 ```
 
 ## Checklist de verificación antes de terminar
@@ -190,9 +284,9 @@ X Draft ID: [id]
 - [ ] Tabla de puntuación creada con mínimo 3 temas candidatos
 - [ ] Tema elegido documentado con justificación
 - [ ] Post LinkedIn generado: 800-1300 chars, sin links, sin bullets AI-style, hashtags al final
-- [ ] Hilo X generado: 3-4 tweets, cada uno <280 chars
-- [ ] Script publish.py ejecutado sin errores
-- [ ] Draft IDs verificados en output
-- [ ] published-topics-log.json actualizado
+- [ ] Autocrítica de calidad completada (hook, mecanismo, dato concreto)
+- [ ] Hilo X generado: 3-4 tweets, cada uno <280 chars, sin "hilo:" ni "1/"
+- [ ] drafts/pending.json escrito con formato correcto
+- [ ] Push a GitHub verificado (HTTP 200 o 201) — GitHub Action activo
+- [ ] published-topics-log.json actualizado via GitHub API
 - [ ] Log de sesión guardado en active/
-- [ ] Notificación Telegram enviada

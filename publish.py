@@ -16,14 +16,8 @@ import argparse
 import os
 import sys
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 import httpx
-from dotenv import load_dotenv
-
-# Subir 3 niveles: social-media/ai-content-agent/publish.py -> raíz del proyecto
-ROOT = Path(__file__).parent.parent.parent
-load_dotenv(ROOT / ".env")
 
 BASE_URL = "https://api.typefully.com/v2"
 
